@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Page title</title>
+        <style>
+            #preloader {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                background-color: #fff;
+                position: fixed;
+                width: 100%;
+                z-index: 9999;
+            }
+
+            #preloader .spinner {
+                border: 6px solid #e0e0e0;
+                border-top: 6px solid #4caf50;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                animation: spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div id="preloader">
+            <div class="spinner"></div>
+        </div>
+    </body>
+</html>
