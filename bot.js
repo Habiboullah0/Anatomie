@@ -90,13 +90,13 @@ async function handleBoneOrJointRequest(chatId, messageId, section, item) {
         bot.sendMessage(
             chatId,
             description
-                ? `${item.name}: ${description}\n\n(Attention : Cette description a été générée par l'intelligence artificielle et peut contenir des erreurs. Veuillez l'utiliser uniquement à titre d'aide et non comme référence exacte.)`
-                : 'Désolé, je n'ai pas pu récupérer la description demandée.'
+                ? `${item.name}: ${description}\n\n(⚠️Attention : Cette description a été générée par l'intelligence artificielle et peut contenir des erreurs. Veuillez l'utiliser uniquement à titre d'aide et non comme référence exacte.)`
+                : 'Désolé, je n\'ai pas pu récupérer la description demandée.'
         );
     } catch (error) {
         console.error(error);
         bot.deleteMessage(chatId, notificationMsg.message_id);
-        bot.sendMessage(chatId, 'Désolé, une erreur s'est produite lors de la récupération des informations. Réessayez plus tard.');
+        bot.sendMessage(chatId, 'Désolé, une erreur s\'est produite lors de la récupération des informations. Réessayez plus tard.');
     }
 }
 
