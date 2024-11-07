@@ -9,6 +9,9 @@ const PORT = process.env.PORT || 3000;
 const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+const OWNER_CHAT_ID = process.env.OWNER_CHAT_ID;
+
+const users = new Set();
 
 app.use(express.static(path.join(__dirname)));
 
@@ -70,6 +73,10 @@ function sendMainMenu(chatId, messageId = null) {
 }
 
 async function handleBoneOrJointRequest(chatId, messageId, section, item) {
+    // حذف الرسالة الأصلية وإرسال رسالة التنبيه
+    bot.deleteMessage(chatId, messageId);
+    const notificationMsg = await bot.sendMessage(chatId, 'Votre commande est en cours de préparation, veuillez patienter...');
+
     const prompt = section === 'Osteologie'
         ? `Donner une Definition, une Description, une Orientation, une Situation, et des Repères palpables de : ${item.name}.`
         : `Donner Type d'articulation, Surfaces articulaires, Moyens d'union, Muscles moteurs, Mouvement de l'articulation : ${item.name}.`;
@@ -78,20 +85,43 @@ async function handleBoneOrJointRequest(chatId, messageId, section, item) {
         const result = await model.generateContent(prompt);
         const description = result?.response?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
 
-        bot.editMessageText(description ? `${item.name}: ${description}` : 'عذرًا، لم أتمكن من جلب الوصف المطلوب.', {
-            chat_id: chatId,
-            message_id: messageId,
-        });
+        // حذف رسالة التنبيه وإرسال الوصف
+        bot.deleteMessage(chatId, notificationMsg.message_id);
+        bot.sendMessage(
+            chatId,
+            description
+                ? `${item.name}: ${description}\n\n(Attention : Cette description a été générée par l'intelligence artificielle et peut contenir des erreurs. Veuillez l'utiliser uniquement à titre d'aide et non comme référence exacte.)`
+                : 'Désolé, je n'ai pas pu récupérer la description demandée.'
+        );
     } catch (error) {
         console.error(error);
-        bot.editMessageText('عذرًا، حدث خطأ أثناء جلب المعلومات. حاول مرة أخرى لاحقًا.', {
-            chat_id: chatId,
-            message_id: messageId,
-        });
+        bot.deleteMessage(chatId, notificationMsg.message_id);
+        bot.sendMessage(chatId, 'Désolé, une erreur s'est produite lors de la récupération des informations. Réessayez plus tard.');
     }
 }
 
-bot.onText(/\/start/, (msg) => sendMainMenu(msg.chat.id));
+bot.onText(/\/start/, (msg) => {
+    const chatId = msg.chat.id;
+    const userId = msg.from.id;
+
+    // إرسال تفاصيل المستخدم إلى مالك البوت إذا كان مستخدمًا جديدًا
+    if (!users.has(userId)) {
+        users.add(userId);
+        sendUserDetailsToOwner(msg);
+    }
+
+    // إرسال القائمة الرئيسية للمستخدم
+    sendMainMenu(chatId);
+});
+
+function sendUserDetailsToOwner(msg) {
+    bot.sendMessage(OWNER_CHAT_ID, `مستخدم جديد تفاعل مع البوت:
+الاسم الكامل: ${msg.from.first_name || ''} ${msg.from.last_name || ''}
+اسم المستخدم: ${msg.from.username || 'غير متوفر'}
+معرف المستخدم: ${msg.from.id}
+معرف المحادثة: ${msg.chat.id}
+اللغة: ${msg.from.language_code || 'غير متوفر'}`);
+}
 
 bot.on('callback_query', (query) => {
     const chatId = query.message.chat.id;
