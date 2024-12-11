@@ -87,7 +87,7 @@ async function handleItemRequest(chatId, messageId, section, item, fullName) {
         const prompts = {
             Osteologie: `Donner une Definition, une Description, une Orientation, une Situation, et des Repères palpables de : ${item.name}.`,
             Arthrologie: `Donner Type d'articulation, Surfaces articulaires, Moyens d'union, Muscles moteurs, Mouvement de l'articulation : ${item.name}.`,
-            Myologie: `Décrire l'origine, l'insertion, la fonction et l'innervation du muscle : ${item.name}.`,
+            Myologie: `Décrire l'origine, trajet, terminaison, action et l'innervation du muscle : ${item.name}.`,
             Vascularisation: `Donner la vascularisation, l'origine et les branches principales de : ${item.name}.`,
             Lymphatiques: `Décrire la distribution et les structures cibles du système lymphatique de : ${item.name}.`,
             Innervation: `Donner les nerfs principaux, les branches et les cibles d'innervation de : ${item.name}.`,
